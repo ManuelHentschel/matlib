@@ -20,11 +20,16 @@
 #' matrix2latex(cbind(A,b), digits = 0)
 #' matrix2latex(cbind(A/2,b), fractions = TRUE)
 #'
-matrix2latex <- function(x, fractions = FALSE, brackets = TRUE, ...){
-  ret <- if (fractions) xtable::xtableMatharray(as.character(MASS::fractions(x)), ...)
-    else xtable::xtableMatharray(x, ...)
+matrix2latex <- function(x, fractions = FALSE, brackets = TRUE, printAlign=TRUE, ...){
+  ret <- if (fractions){
+    xtable::xtableMatharray(as.character(MASS::fractions(x)), ...)
+  } else {
+    xtable::xtableMatharray(x, ...)
+  }
+  if(printAlign) cat('\\begin{align*}\n')
   if(brackets) cat('\\left[\n ')
   print(ret)
   if(brackets) cat('\\right]\n')
+  if(printAlign) cat('\\end{align*}\n')
   invisible(NULL)
 }

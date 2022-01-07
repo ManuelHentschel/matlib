@@ -76,16 +76,17 @@ gaussianElimination <- function(A, B, tol=sqrt(.Machine$double.eps),
     }
     i <- j <- 1
     if (verbose){
-        cat("\nInitial matrix:\n")
+        # cat("\nInitial matrix:\n")
         printMatrix(A)
     }
     while (i <= n && j <= m){
-        if (verbose) cat("\nrow:", i, "\n")
+        # if (verbose) cat("\nrow:", i, "\n")
         while (j <= m){
             currentColumn <- A[,j]
             currentColumn[1:n < i] <- 0
             # find maximum pivot in current column at or below current row
-            which <- which.max(abs(currentColumn))
+            which <- i # don't pivot
+            # which <- which.max(abs(currentColumn))
             pivot <- currentColumn[which]
             det <- det*pivot
             pivots[i] <- pivot
@@ -98,15 +99,29 @@ gaussianElimination <- function(A, B, tol=sqrt(.Machine$double.eps),
                 det <- -det
                 interchanges <- interchanges + 1
                 if (verbose) {
-                    cat("\n exchange rows", i, "and", which, "\n")
-                    printMatrix(A)
+                    # cat("\n exchange rows", i, "and", which, "\n")
+                    cat("\n")
+                    cat("\\begin{align*}\n")
+                    cat("L_", i, " \\updownarrow L_", which, ":\n", sep='')
+                    printMatrix(A, printAlign = FALSE)
+                    cat("\\end{align*}\n")
                 }
             }
             A <- rowmult(A, i, 1/pivot) # pivot (E1)
             if (verbose && abs(pivot - 1) > tol){
-                cat("\n multiply row", i, "by",
-                    if (fractions) as.character(MASS::fractions(1/pivot)) else 1/pivot, "\n")
-                printMatrix(A)
+                cat("\n")
+                cat("\\begin{align*}\n")
+                # cat("\n multiply row", i, "by",
+                #     if (fractions) as.character(MASS::fractions(1/pivot)) else 1/pivot, "\n")
+                cat(
+                    "L_", i, " \\rightarrow ", "L_", i, "\\cdot",
+                    if(pivot < 0) "(" else "",
+                    if (fractions) as.character(MASS::fractions(1/pivot)) else 1/pivot,
+                    if(pivot < 0) ")" else "",
+                    ":\n"
+                )
+                printMatrix(A, printAlign = FALSE)
+                cat("\\end{align*}\n")
             }
             for (k in 1:n){
                 if (k == i) next
@@ -115,16 +130,26 @@ gaussianElimination <- function(A, B, tol=sqrt(.Machine$double.eps),
                 if (abs(factor) < tol) next
                 A <- rowadd(A, i, k, -factor) # sweep column j (E2)
                 if (verbose){
-                  if (abs(factor - 1) > tol){
-                    cat("\n multiply row", i, "by",
-                        if (fractions) as.character(MASS::fractions(abs(factor))) else abs(factor),
-                        if (factor > 0) "and subtract from row" else "and add to row", k, "\n")
-                  }
-                  else{
-                    if (factor > 0) cat("\n subtract row", i, "from row", k, "\n")
-                    else cat("\n add row", i, "from row", k, "\n")
-                  }
-                    printMatrix(A)
+                    cat("\n")
+                    cat("\\begin{align*}\n")
+                    cat( "L_", k, " \\rightarrow ", "L_", k, " ", sep='')
+                    if(factor < 0){
+                        cat(' + ')
+                    } else{
+                        cat(' - ')
+                    }
+                    factor <- abs(factor)
+                    if(abs(factor - 1) > tol){
+                        if(fractions){
+                            cat(as.character(MASS::fractions(abs(factor))))
+                        } else {
+                            cat(abs(factor))
+                        }
+                        cat(' \\cdot')
+                    }
+                    cat(' L_', i, ' : \n', sep='')
+                    printMatrix(A, printAlign = FALSE)
+                    cat("\\end{align*}\n")
                 }
             }
             j <- j + 1

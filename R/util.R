@@ -19,8 +19,14 @@
 #' printMatrix(A, fractions=TRUE)
 #' printMatrix(A, latex=TRUE)
 
-printMatrix <- function(A, parent = TRUE, fractions = FALSE, latex = FALSE,
-						tol = sqrt(.Machine$double.eps)){
+printMatrix <- function(
+	A,
+	parent = TRUE,
+	fractions = FALSE,
+	latex = FALSE,
+	tol = sqrt(.Machine$double.eps),
+	printAlign = TRUE
+){
 	if(parent){
 		envir <- as.environment(-1L)
 		if(!is.null(envir$fractions)) fractions <- envir$fractions
@@ -28,7 +34,14 @@ printMatrix <- function(A, parent = TRUE, fractions = FALSE, latex = FALSE,
 		if(!is.null(envir$tol)) tol <- envir$tol
 	}
 	if (latex) {
-		matrix2latex(A, fractions=fractions, digits = round(abs(log(tol,10))))
+		align <- paste0(strrep('r', ncol(A)), '|', 'r')
+		matrix2latex(
+			A,
+			fractions=fractions,
+			digits = round(abs(log(tol,10))),
+			align=align,
+			printAlign=printAlign
+		)
 	} else {
 		print(formatNumbers(as.matrix(A), fractions=fractions, tol=tol))
 	}
